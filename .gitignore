@@ -77,3 +77,4 @@ test
 web
 windows
 .flutter-plugins-dependencies
+lib/api_key.dart

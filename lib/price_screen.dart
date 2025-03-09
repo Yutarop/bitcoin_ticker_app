@@ -1,3 +1,4 @@
+import 'package:bitcoin_ticker_app/cryptoCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:bitcoin_ticker_app/coin_data.dart';
@@ -11,9 +12,8 @@ class PriceScreen extends StatefulWidget {
 class _PriceScreenState extends State<PriceScreen> {
 
   String selectedCurrency = 'USD';
-  int? selectedExchangeRateBTC;
-  int? selectedExchangeRateETH;
-  int? selectedExchangeRateLTC;
+  Map<String, String> coinValues = {};
+  bool isWaiting = false;
 
   @override
   void initState() {
@@ -21,16 +21,42 @@ class _PriceScreenState extends State<PriceScreen> {
     getExchangeRate();
   }
 
+  Column makeCards(){
+    List<Widget> cryptoCards = [];
+    for (int i = 0; i < cryptoList.length; i++) {
+      if (i != 0) {
+        cryptoCards.add(
+          SizedBox(
+            height: 20.0,
+          )
+        );
+      }
+      cryptoCards.add(
+        Cryptocard(
+          cryptoCurrency: cryptoList[i],
+          selectedCurrency: selectedCurrency,
+          value: isWaiting ? '?' : coinValues[cryptoList[i]],
+        )
+      );
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: cryptoCards,
+    );
+  }
+
   void getExchangeRate() async{
+    isWaiting = true;
     CoinData coinData = CoinData();
-    var btcData = await coinData.getCoinData(selectedCurrency, 'BTC');
-    var ethData = await coinData.getCoinData(selectedCurrency, 'ETH');
-    var ltcData = await coinData.getCoinData(selectedCurrency, 'LTC');
-    setState(() {
-      selectedExchangeRateBTC = btcData['rate'].toInt();
-      selectedExchangeRateETH = ethData['rate'].toInt();
-      selectedExchangeRateLTC = ltcData['rate'].toInt();
-    });
+    try {
+      var data = await coinData.getCoinData(selectedCurrency);
+      isWaiting = false;
+      setState(() {
+        coinValues = data;
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   DropdownButton<String> androidDropdownButton(){
@@ -45,12 +71,15 @@ class _PriceScreenState extends State<PriceScreen> {
 
     return DropdownButton<String>(
       value: selectedCurrency,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 30.0,
+      ),
       items: dropdownItems,
       onChanged: (value) {
         setState(() {
           selectedCurrency = value!;
           getExchangeRate();
-          print(selectedCurrency);
         });
       }
     );
@@ -89,8 +118,13 @@ class _PriceScreenState extends State<PriceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('🤑 Coin Ticker')),
-        backgroundColor: Colors.lightBlueAccent,
+        title: Center(child: Text(
+          '🤑 Coin Ticker',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        )),
+        backgroundColor: Color(0xFF388E3C),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,78 +132,13 @@ class _PriceScreenState extends State<PriceScreen> {
         children: <Widget>[
           Padding(
             padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 BTC = $selectedExchangeRateBTC $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20.0,
-                ),
-                Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 ETH = $selectedExchangeRateETH $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20.0,
-                ),
-                Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 LTC = $selectedExchangeRateLTC $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: makeCards(),
           ),
           Container(
-            height: 150.0,
+            height: 120.0,
             alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
+            padding: EdgeInsets.only(bottom: 10.0),
+            color: Color(0xFF3D8D7A),
             child: getPicker(),
           //   Platform.isIOS ? iOSPicker() : androidDropdown(),
           ),

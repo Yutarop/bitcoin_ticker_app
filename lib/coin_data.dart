@@ -31,21 +31,28 @@ const List<String> cryptoList = [
   'BTC',
   'ETH',
   'LTC',
+  'XRP',
+  'ADA',
 ];
 
 class CoinData {
+  Future getCoinData(String selectedCurrency,) async {
+    // return this map at the end
+    Map<String, String> cryptoPrices = {};
 
-  Future getCoinData(String selectedCurrency, String selectedCrypt) async {
-      String url = '$baseURL/$selectedCrypt/$selectedCurrency?apikey=$API_KEY';
+    for (String crypto in cryptoList){
+      String url = '$baseURL/$crypto/$selectedCurrency?apikey=$API_KEY';
       http.Response response = await http.get(Uri.parse((url)));
-
       if(response.statusCode == 200){
-        String data = response.body;
-        var decodedData = jsonDecode(data);
-        return decodedData;
+        var decodedData = jsonDecode(response.body);
+          double price = decodedData["rate"].toDouble();
+          cryptoPrices[crypto] = price.toStringAsFixed(0);
       } else {
         print(response.statusCode);
+        throw 'Problem with the get request';
       }
+    }
+    return cryptoPrices;
   }
 }
 

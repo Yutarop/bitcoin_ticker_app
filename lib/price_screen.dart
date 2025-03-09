@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:bitcoin_ticker_app/coin_data.dart';
+import 'dart:io' show Platform;
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -6,11 +9,64 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
+
+  String? selectedCurrency = 'USD';
+
+  DropdownButton<String> androidDropdownButton(){
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    for(String currencyName in currenciesList){
+      var newItem = DropdownMenuItem(
+        child: Text(currencyName),
+        value: currencyName,
+      );
+      dropdownItems.add(newItem);
+    };
+
+    return DropdownButton<String>(
+      value: selectedCurrency,
+      items: dropdownItems,
+      onChanged: (value) {
+        setState(() {
+          selectedCurrency = value;
+        });
+      }
+    );
+  }
+
+  CupertinoPicker iOSPicker() {
+    List<Text> textItems = [];
+    for(String currencyName in currenciesList){
+      var newItem = Text(
+        currencyName,
+      );
+      textItems.add(newItem);
+    };
+
+    return CupertinoPicker(
+      itemExtent: 32.0,
+      backgroundColor: Colors.lightBlue,
+      onSelectedItemChanged: (selectedIndex) {
+        print(selectedIndex);
+      }, children: textItems,
+    );
+  }
+
+  Widget getPicker(){
+    if (Platform.isIOS) {
+      return iOSPicker();
+    }
+    else if (Platform.isAndroid) {
+      return androidDropdownButton();
+    }
+    return SizedBox();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('🤑 Coin Ticker'),
+        title: Center(child: Text('🤑 Coin Ticker')),
+        backgroundColor: Colors.lightBlueAccent,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -42,7 +98,8 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: null,
+            child: getPicker(),
+          //   Platform.isIOS ? iOSPicker() : androidDropdown(),
           ),
         ],
       ),

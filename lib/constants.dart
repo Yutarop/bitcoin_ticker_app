@@ -1,0 +1,1 @@
+String baseURL = 'https://api-realtime.exrates.coinapi.io/v1/exchangerate';

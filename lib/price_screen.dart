@@ -10,24 +10,26 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
 
-  String? selectedCurrency = 'USD';
-  int? trialData;
-  String? textTry;
+  String selectedCurrency = 'USD';
+  int? selectedExchangeRateBTC;
+  int? selectedExchangeRateETH;
+  int? selectedExchangeRateLTC;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getBTCExchangeRate();
+    getExchangeRate();
   }
 
-  void getBTCExchangeRate() async{
+  void getExchangeRate() async{
     CoinData coinData = CoinData();
-    var rawData = await coinData.getCoinData();
-    trialData = rawData['rate'].toInt();
-    print('look at $trialData');
+    var btcData = await coinData.getCoinData(selectedCurrency, 'BTC');
+    var ethData = await coinData.getCoinData(selectedCurrency, 'ETH');
+    var ltcData = await coinData.getCoinData(selectedCurrency, 'LTC');
     setState(() {
-      textTry = '1 BTC = $trialData USD';
+      selectedExchangeRateBTC = btcData['rate'].toInt();
+      selectedExchangeRateETH = ethData['rate'].toInt();
+      selectedExchangeRateLTC = ltcData['rate'].toInt();
     });
   }
 
@@ -46,7 +48,9 @@ class _PriceScreenState extends State<PriceScreen> {
       items: dropdownItems,
       onChanged: (value) {
         setState(() {
-          selectedCurrency = value;
+          selectedCurrency = value!;
+          getExchangeRate();
+          print(selectedCurrency);
         });
       }
     );
@@ -65,7 +69,8 @@ class _PriceScreenState extends State<PriceScreen> {
       itemExtent: 32.0,
       backgroundColor: Colors.lightBlue,
       onSelectedItemChanged: (selectedIndex) {
-        print(selectedIndex);
+        selectedCurrency = currenciesList[selectedIndex];
+        getExchangeRate();
       }, children: textItems,
     );
   }
@@ -93,23 +98,71 @@ class _PriceScreenState extends State<PriceScreen> {
         children: <Widget>[
           Padding(
             padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  textTry ?? '?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Card(
+                  color: Colors.lightBlueAccent,
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    child: Text(
+                      '1 BTC = $selectedExchangeRateBTC $selectedCurrency',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                SizedBox(
+                  height: 20.0,
+                ),
+                Card(
+                  color: Colors.lightBlueAccent,
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    child: Text(
+                      '1 ETH = $selectedExchangeRateETH $selectedCurrency',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 20.0,
+                ),
+                Card(
+                  color: Colors.lightBlueAccent,
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    child: Text(
+                      '1 LTC = $selectedExchangeRateLTC $selectedCurrency',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
